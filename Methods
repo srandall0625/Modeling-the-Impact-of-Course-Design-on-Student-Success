@@ -1,1 +1,70 @@
 
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[american]{babel}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{setspace}
+\usepackage{csquotes}
+\usepackage[style=apa,backend=biber,sortcites=true,natbib=true]{biblatex}
+\addbibresource{references.bib}
+\DeclareLanguageMapping{american}{american-apa}
+
+\title{Modeling the Impact of Course Design and Accessibility Factors on Student Success: A Learning Analytics Approach Using OULAD }
+\author{Salina Randall}
+\date{October 21, 2025}
+
+\begin{document}
+\maketitle
+\onehalfspacing
+
+\section{Methods}
+\subsection{Overview}
+This study examines how course design and digital accessibility influence student outcomes using the Open University Learning Analytics Dataset (OULAD). Instead of viewing accessibility as merely a compliance checkbox, the analysis considers how structural choices—such as pacing, assessment timing, and engagement strategies—affect persistence and success. The dataset’s richness enables tracking student behavior over time and linking these patterns to the design of their courses.
+I’ve decided to divide the research into three steps. First, the analysis thoroughly explores the temporal and structural details within OULAD. This includes how courses are organized, how frequently students interact, and how these patterns change week by week. Second, we will examine whether certain course design elements help or hinder students who receive accommodations. Finally, we’ll develop a modeling framework that identifies which course features reliably support success across the entire population.
+\subsection{Data Understanding and Preparation}
+The OULAD dataset provides a rare window into large-scale, real-world learning data. It contains records from more than 30,000 students enrolled in 22 modules, each offered over multiple academic terms. The data is stored in several interconnected tables:
+\begin{itemize}
+    \item studentInfo: demographic details such as age, gender, prior education, region, and a disability indicator used to flag students who disclosed a disability and received accommodations.
+    \item studentRegistration: registration and withdrawal dates that allow calculation of persistence and time-to-withdrawal.
+    \item assessments and studentAssessment: details about the number, timing, and weight of assessments, plus student submissions and scores.
+    \item vle and studentVle: daily logs of student activity in the virtual learning environment, identifying what resources students accessed and when.
+    \item courses: module-level information like start and end dates, presentation codes, and duration.
+\end{itemize}
+All tables are joined by student ID and module–presentation identifiers, producing a single record for each student’s experience in a specific course offering. Before analysis, data are cleaned, variables standardized, and implausible engagement values trimmed to minimize distortion from outliers or automated clicks.
+\subsubsection{Outcomes}
+Three related outcomes capture different dimensions of student success:
+\begin{itemize}
+    \item Completion: whether a student successfully completed and passed the course.
+    \item Persistence: whether the student remained enrolled through the final week.
+    \item Time to withdrawal: the number of days from the start of the module until the student withdrew, used in survival modeling.
+\end{itemize}
+Together, these outcomes capture both static results (pass/fail) and dynamic behavior (when withdrawal occurs), aligning closely with institutional measures of retention and completion.
+\subsubsection{Feature Engineering}
+Transforming raw logs into usable predictors is the backbone of the study. The goal is to represent how courses are designed and how students respond to those designs in measurable ways.
+\subsubsection{Student Demographics and Baseline Characteristics}
+Variables such as age band, gender, prior education, and region provide essential context. The disability indicator is not treated as an outcome; rather, it acts as a subgroup identifier to test whether certain course structures work equally well for students who receive accommodations.
+\subsubsection{Assessment Structure}
+Course pacing and assessment design are captured through the number of assessments, their distribution across the term, the proportion of total grade weight due early versus late, and the gaps between deadlines. Student-level measures, such as the proportion of late submissions or zeros, offer insight into how students manage the assessment rhythm.
+\subsubsection{Interaction and Engagement Patterns}
+Daily clickstream data are condensed to weekly summaries, revealing early activity levels, engagement trajectories (rising, stable, or declining), and the types of interactions—such as quizzes, forums, or content views—that dominate a student’s activity. Metrics like “last active week” and “early engagement intensity” help identify behavioral patterns associated with either persistence or risk of withdrawal.
+\subsubsection{Course-Level Design Factors}
+Beyond individual behavior, course-level features capture how learning environments are constructed: course length, mix of resource types, ratio of interactive to static materials, and the timing of major deadlines. These provide a lens into structural design choices that may drive student outcomes.
+\subsection{Modeling Strategy}
+The analysis proceeds in two phases. The first focuses exclusively on students with accommodations, using the disability indicator as a kind of litmus test. The goal is to find structural course features that don’t disadvantage this group—factors that seem to support equitable participation. Those non-harmful features are then used in broader population models to see whether the same design elements benefit all students.
+\subsubsection{Logistic Regression}
+Logistic regression is used to model binary outcomes such as completion and persistence. 
+It provides interpretable odds ratios that show how likely students are to succeed given specific course or engagement characteristics. For example, a positive coefficient for assessment density would indicate that courses with more frequent assessments are associated with higher odds of completion. Elastic net regularization balances interpretability with stability, particularly when predictors overlap.
+\subsubsection{Survival Analysis}
+To understand when students withdraw rather than simply whether they do, Cox proportional hazards models are used. These models estimate how features like early engagement or pacing affect the hazard—or risk—of withdrawal over time. In practical terms, they reveal whether students in certain course designs tend to disengage earlier or persist longer.
+\subsubsection{Tree-Based Machine Learning}
+For patterns that are more complex than linear models can capture, ensemble methods such as random forests and gradient boosting (XGBoost) are applied. These models handle nonlinear relationships and interactions naturally—for instance, how assessment pacing might interact with early engagement or prior education level. Model tuning is handled through cross-validation, using AUC and calibration measures to select the best-performing configurations.
+\subsection{Evaluation and Interpretability}
+Model evaluation balances predictive accuracy with clarity. Classification models are compared using metrics such as AUC, precision, recall, and calibration. Survival models are assessed with the concordance index and time-dependent AUC. To ensure improvements in accuracy do not come at the expense of equity, subgroup metrics—true positive rates, calibration slopes, and precision gaps—are compared across students with and without accommodations.
+Interpretability is a central requirement. Regression models are summarized with odds ratios and confidence intervals. For the more complex tree models, feature importance, SHAP values, and partial dependence plots are used to unpack how individual variables contribute to predictions. These interpretive layers turn statistical findings into actionable insights—helping instructors and administrators see why certain designs work and where they might be leaving some students behind.
+\subsection{Reproducibility and Ethical Considerations}
+All analyses are conducted in R using reproducible scripts and a version-controlled environment to ensure transparency and replicability. Each step—from data cleaning and feature creation to model training and evaluation—is documented and can be rerun in full. The codebase follows open research conventions, making it possible for others to verify or extend the work.
+Although the OULAD dataset is fully anonymized and publicly available, care is taken to treat the data responsibly. Disability indicators are used strictly for analytical comparison, not for classification or prediction at the individual level. The intent is to understand structural factors that support equitable learning, not to profile or label students. Findings are interpreted in that spirit: as guidance for improving course design and institutional decision-making, rather than as diagnostic tools for individuals.
+Finally, interpretability and transparency are treated as ethical obligations, not just technical features. By explaining how each model arrives at its predictions—through odds ratios, SHAP values, and visual summaries—the analysis keeps results grounded in context. The ultimate goal is to make the research both rigorous and usable: a foundation that supports actionable improvements in accessibility, teaching, and learning without oversimplifying the human complexity behind the data.
+\printbibliography
+\end{document}
